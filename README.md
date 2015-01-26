@@ -30,16 +30,16 @@ zray.php
 After installation was successful, there are additional tabs in the Z-Ray toolbar.
 
 ### Tab Entities
-![Tab Doctrine Entities](docs/img/tab_entities.jpg)
+![Tab Doctrine 2 Entities](docs/img/tab_entities.jpg)
 
 The `Entities` tab displays information about used entities of the current page. There are the following columns:
-  
+
  * **Entity**: FCQN of the entity class
  * **Number Of Unique Entities**: This is how many unique objects of this entity exist
  * **Number Of Referenced Entities**: This is how many references exist for this entity
 
 ### Tab Queries
-![Tab Doctrine Queries](docs/img/tab_queries.jpg)
+![Tab Doctrine 2 Queries](docs/img/tab_queries.jpg)
 
 The `Queries` tab displays information about executed queries. There are the following columns:
 
@@ -48,3 +48,10 @@ The `Queries` tab displays information about executed queries. There are the fol
  * **Cached**: The number of cached queries
 
 Note that real queries are calculated with `Number - Cached`.
+
+## More Info
+Want to extend the Doctrine 2 Z-Ray extension? Looking for more information on Z-Ray? Try these links:
+
+- [Z-Ray Documentation](https://github.com/zend-server-extensions/Z-Ray-Documentation)
+- [Zend Server Online Help - Z-Ray overview](http://files.zend.com/help/Zend-Server/zend-server.htm#z-ray.htm)
+- [Zend.com](http://www.zend.com/en/products/server/z-ray)
