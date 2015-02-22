@@ -97,7 +97,9 @@ class DoctrineOrm
                 $storage['entities'][$data['class']][self::INDEX_ENTITIES_REFERENCE] += $data['ref'];
             }
         }
-        asort($storage['entities']);
+        if (!empty($storage['entities'])) {
+            asort($storage['entities']);
+        }
 
         // collect queries
         foreach ($this->queries as $query => $data) {
