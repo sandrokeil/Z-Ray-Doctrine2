@@ -11,7 +11,7 @@ This is an extension to add functionality to the Zend Server Z-Ray. It will resu
 
 ## Installation
 
-- Copy the content of `src` directory to
+- Copy the content of `zray` directory to
 
 ```
     /usr/local/zend/var/zray/extensions/Doctrine2
