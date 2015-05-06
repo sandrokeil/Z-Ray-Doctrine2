@@ -1,0 +1,7 @@
+{
+  "name" : "doctrine2",
+  "display_name" : "Doctrine 2",
+  "version" : "1.0.0",
+  "type": ["zray"],
+  "logo": "docs/img/doctrine.png"
+}
