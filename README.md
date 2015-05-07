@@ -1,10 +1,10 @@
-# Doctrine 2 Extension for Zend Server Z-Ray
+# Doctrine 2 plugin for Zend Server Z-Ray
 
 > Displays information about your Doctrine entities
 
 > Displays information about your Doctrine queries
 
-This is an extension to add functionality to the Zend Server Z-Ray. It will result in additional tab(s) to be presented in the browser.
+This is a plugin to add functionality to the Zend Server Z-Ray. It will result in additional tab(s) to be presented in the browser.
 
  * **Every change is tracked**. Want to know whats new? Take a look at [CHANGELOG.md](CHANGELOG.md)
  * **Listen to your ideas.** Have a great idea? Bring your pull request or open a new issue. See [CONTRIBUTING.md](CONTRIBUTING.md)

@@ -8,5 +8,5 @@ If you wish to contribute to Z-Ray-Doctrine2, please be sure to read to the foll
  -  Git Guide: [README-GIT.md](README-GIT.md)
 
 If you are working on new features, or refactoring an existing
-component, please create a proposal. You can do this in on the RFC's
+component, please create a proposal. You can do this on the RFC's
 page, https://github.com/sandrokeil/Z-Ray-Doctrine2/wiki/RFCs.
