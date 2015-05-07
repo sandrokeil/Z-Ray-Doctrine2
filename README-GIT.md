@@ -1,6 +1,6 @@
 # USING THE GIT REPOSITORY
 
-## Setup your own public github repository
+## Setup your own public GitHub repository
 
 Your first step is to establish a public repository from which i can pull your work into the master repository.
 
@@ -73,7 +73,7 @@ To ssh://git@github.com/sandrokeil/Z-Ray-Doctrine2.git
    g5342..9k3532  HEAD -> master
 ```
 
-You can do the pull request from github. Navigate to your repository, select the branch you just created, and then
+You can do the pull request from GitHub. Navigate to your repository, select the branch you just created, and then
 select the "Pull Request" button in the upper right. Select the user "sandrokeil" as the recipient.
 
 ### What branch to issue the pull request against?
