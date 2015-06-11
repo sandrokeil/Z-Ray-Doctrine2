@@ -1,9 +1,10 @@
+
 {
   "name" : "doctrine2",
   "display_name" : "Doctrine 2",
   "version" : "1.0.1",
   "type": ["zray"],
-  "logo": "logo.png",
+  "logo": "docs/img/doctrine.png"
   "eula": "LICENSE.txt",
   "readme": "README.txt",
   "dependencies": {
