@@ -14,8 +14,6 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . 'DoctrineOrm.php';
 // Allocate ZRayExtension for namespace "doctrine2"
 $zre = new \ZRayExtension('doctrine2');
 
-$doctrine = new DoctrineOrm();
-
 $zre->setMetadata(array(
     'logo' => __DIR__ . DIRECTORY_SEPARATOR . 'logo.png',
 ));
@@ -23,13 +21,15 @@ $zre->setMetadata(array(
 // needed to get first query, connect() is to late
 $zre->setEnabledAfter('Doctrine\DBAL\Connection::__construct');
 
+$doctrine = new DoctrineOrm();
+
 // Doctrine\DBAL
 $zre->traceFunction('Doctrine\DBAL\Connection::executeUpdate', function(){}, array($doctrine, 'queries'));
 $zre->traceFunction('Doctrine\DBAL\Connection::executeQuery', function(){}, array($doctrine, 'queries'));
 $zre->traceFunction('Doctrine\DBAL\Connection::executeCacheQuery', function(){}, array($doctrine, 'queries'));
 
 // Doctrine\ORM
-$zre->traceFunction('Doctrine\ORM\UnitOfWork::createEntity', function(){}, array($doctrine, 'entityMappings'));
+$zre->traceFunction('Doctrine\ORM\UnitOfWork::createEntity', function(){}, array($doctrine, 'unitOfWork'));
 
 // Z-Ray Doctrine extension
 $zre->traceFunction('Sake\ZRayDoctrine2\DoctrineOrm::shutdown', function(){}, array($doctrine, 'collectAllData'));

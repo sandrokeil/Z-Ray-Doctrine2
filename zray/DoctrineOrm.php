@@ -16,8 +16,8 @@ namespace Sake\ZRayDoctrine2;
  */
 class DoctrineOrm
 {
-    const INDEX_ENTITIES_UNIQUE = 'number of unique entities';
-    const INDEX_ENTITIES_REFERENCE = 'number of referenced entities';
+    const INDEX_ENTITIES_UNIQUE = 'unique_entities';
+    const INDEX_ENTITIES_REFERENCE = 'referenced_entities';
 
     /**
      * Entities
@@ -41,6 +41,10 @@ class DoctrineOrm
      */
     public function queries($context, &$storage)
     {
+        // dont break z-ray
+        if (empty($context['functionArgs'][0])) {
+            return;
+        }
         $query = $context['functionArgs'][0];
 
         if (!isset($this->queries[$query])) {
@@ -64,8 +68,15 @@ class DoctrineOrm
      * @param array $context
      * @param array $storage
      */
-    public function entityMappings($context, &$storage)
+    public function unitOfWork($context, &$storage)
     {
+        // dont break z-ray
+        if (empty($context['functionArgs'][0])
+            || empty($context['returnValue'])
+        ) {
+            return;
+        }
+
         $class = $context['functionArgs'][0];
         $hash = spl_object_hash($context['returnValue']);
 
@@ -97,6 +108,7 @@ class DoctrineOrm
                 $storage['entities'][$data['class']][self::INDEX_ENTITIES_REFERENCE] += $data['ref'];
             }
         }
+
         if (!empty($storage['entities'])) {
             asort($storage['entities']);
         }
@@ -106,6 +118,7 @@ class DoctrineOrm
             $storage['queries'][$query] = $data;
         }
     }
+
 
     /**
      * Only for listen to the php shutdown event to collect all data
