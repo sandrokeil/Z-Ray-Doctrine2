@@ -9,11 +9,15 @@
 
 $tableParamsDoctrineQueries = array(
     'tableId' => 'table-doctrine-queries',
-    'tableWidth' => '4'
+    'tableWidth' => '4',
 );
 ?>
 
-<p style="padding:5px 10px">This is a list of executed Doctrine 2 queries.</p>
+<p style="padding:5px 10px">
+    This is a list of executed queries with cache information.
+    <span id="doctrine2-number-of-queries" style="font-weight: bold"></span> queries were sent to the database server.
+    <span id="doctrine2-number-of-cached-queries" style="font-weight: bold"></span> queries were cached.
+</p>
 <?= $this->zrayTable($tableParamsDoctrineQueries); ?>
 
 <script type="text/javascript">
@@ -27,7 +31,8 @@ $tableParamsDoctrineQueries = array(
                 "label": "Query",
                 "propertyName": "query",
                 "sortable": true,
-                "width": '60%',
+                "width": '40%',
+                attributes: { 'class': 'zdb-monospace' },
                 "tooltip": "The executed query",
                 "getHtml": function( value, record ) {
                     return value;
@@ -52,6 +57,16 @@ $tableParamsDoctrineQueries = array(
                 "getHtml": function( value, record ) {
                     return value;
                 }
+            },
+            {
+                "label": "Params",
+                "propertyName": "params",
+                "sortable": false,
+                "width": '20%',
+                "tooltip": "Params",
+                "getHtml": function( value, record ) {
+                    return value;
+                }
             }
         ] );
         // create main table - end
@@ -62,6 +77,20 @@ $tableParamsDoctrineQueries = array(
 
         zray.registerDataHandler( 'doctrine2', 'queries', function( extensionData, requestData ) {
             storage.setData( extensionData );
+
+            var realQueries = 0;
+            var numberOfQueries = 0;
+            var numberOfCachedQueries = 0;
+
+            jQuery.each( extensionData, function( index, value ) {
+                    realQueries += value.number - value.cached;
+                    numberOfQueries += value.number;
+                    numberOfCachedQueries += value.cached;
+                }
+            );
+
+            jQuery( '#doctrine2-number-of-queries' ).html( realQueries + ' of ' + numberOfQueries );
+            jQuery( '#doctrine2-number-of-cached-queries' ).html( numberOfCachedQueries );
         } );
     })();
 </script>

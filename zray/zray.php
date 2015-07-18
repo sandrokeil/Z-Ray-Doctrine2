@@ -30,6 +30,7 @@ $zre->traceFunction('Doctrine\DBAL\Connection::executeCacheQuery', function(){},
 
 // Doctrine\ORM
 $zre->traceFunction('Doctrine\ORM\UnitOfWork::createEntity', function(){}, array($doctrine, 'unitOfWork'));
+$zre->traceFunction('Doctrine\ORM\UnitOfWork::__construct', function(){}, array($doctrine, 'entityMapping'));
 
 // Z-Ray Doctrine extension
 $zre->traceFunction('Sake\ZRayDoctrine2\DoctrineOrm::shutdown', function(){}, array($doctrine, 'collectAllData'));

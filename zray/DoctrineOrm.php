@@ -9,6 +9,9 @@
 
 namespace Sake\ZRayDoctrine2;
 
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Mapping\ClassMetadata;
+
 /**
  * Class DoctrineOrm
  *
@@ -46,20 +49,35 @@ class DoctrineOrm
             return;
         }
         $query = $context['functionArgs'][0];
+        $params = '';
+
+        if (!empty($context['functionArgs'][1])) {
+            $params = print_r($context['functionArgs'][1], true);
+        }
 
         if (!isset($this->queries[$query])) {
             $this->queries[$query] = [
                 'query' => $query,
                 'number' => 0,
                 'cached' => 0,
+                'params' => $params,
             ];
         }
 
         if ($context['functionName'] == 'Doctrine\DBAL\Connection::executeCacheQuery') {
             $this->queries[$query]['cached']++;
-        } else {
-            $this->queries[$query]['number']++;
+            return;
         }
+        if (!empty($context['functionArgs'][1])
+            && $this->queries[$query]['cached'] === 0
+        ) {
+            if (!empty($this->queries[$query]['params'])) {
+                $this->queries[$query]['params'] .= '<hr/>';
+            }
+            $this->queries[$query]['params'] .= $params;
+        }
+
+        $this->queries[$query]['number']++;
     }
 
     /**
@@ -81,9 +99,41 @@ class DoctrineOrm
         $hash = spl_object_hash($context['returnValue']);
 
         if (!isset($this->entities[$hash])) {
-            $this->entities[$hash] = ['class' => $class, 'number' => 1, 'ref' => 0];
+            $this->entities[$hash] = ['class' => $class, 'unique' => 1, 'ref' => 0];
         } else {
             $this->entities[$hash]['ref']++;
+        }
+    }
+
+    /**
+     * Collects entity usage from unit of work.
+     *
+     * @param array $context
+     * @param array $storage
+     */
+    public function entityMapping($context, &$storage)
+    {
+        // dont break z-ray
+        if (empty($context['functionArgs'][0])
+            || !($context['functionArgs'][0] instanceof EntityManager)
+        ) {
+            return;
+        }
+        /* @var $em EntityManager */
+        $em = $context['functionArgs'][0];
+
+        $allMetadata = $em->getMetadataFactory()->getAllMetadata();
+
+        if (empty($allMetadata)) {
+            return;
+        }
+        /* @var $metadata ClassMetadata */
+        foreach ($allMetadata as $metadata) {
+            $this->entities[] = [
+                'class' => $metadata->getName(),
+                'unique' => 0,
+                'ref' => 0,
+            ];
         }
     }
 
@@ -100,13 +150,13 @@ class DoctrineOrm
             if (!isset($storage['entities'][$data['class']])) {
                 $storage['entities'][$data['class']] = [
                     'entity' => $data['class'],
-                    self::INDEX_ENTITIES_UNIQUE => 1,
-                    self::INDEX_ENTITIES_REFERENCE => $data['ref'],
+                    'unique_entities' => $data['unique'],
+                    'referenced_entities' => $data['ref'],
                 ];
-            } else {
-                $storage['entities'][$data['class']][self::INDEX_ENTITIES_UNIQUE]++;
-                $storage['entities'][$data['class']][self::INDEX_ENTITIES_REFERENCE] += $data['ref'];
+                continue;
             }
+            $storage['entities'][$data['class']]['unique_entities'] += $data['unique'];
+            $storage['entities'][$data['class']]['referenced_entities'] += $data['ref'];
         }
 
         if (!empty($storage['entities'])) {

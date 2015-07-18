@@ -12,7 +12,11 @@ $tableParamsDoctrineEntities = array(
     'tableWidth' => '4',
 );
 ?>
-<p style="padding:5px 10px">This is a list of currently used Doctrine 2 entities.</p>
+<p style="padding:5px 10px">
+    <span id="doctrine2-number-of-entities" style="font-weight: bold"></span> entity mappings exists.
+    <span id="doctrine2-unique-entities" style="font-weight: bold"></span> unique entities and
+    <span id="doctrine2-referenced-entities" style="font-weight: bold"></span> entity references were created.
+</p>
 <?= $this->zrayTable($tableParamsDoctrineEntities); ?>
 
 <script type="text/javascript">
@@ -29,7 +33,7 @@ $tableParamsDoctrineEntities = array(
                 "width": '60%',
                 "tooltip": "Entity Namespace",
                 "getHtml": function( value, record ) {
-                    return  value;
+                    return value;
                 }
             },
             {
@@ -61,6 +65,20 @@ $tableParamsDoctrineEntities = array(
 
         zray.registerDataHandler( 'doctrine2', 'entities', function( extensionData, requestData ) {
             storage.setData( extensionData );
+            jQuery( '#doctrine2-number-of-entities' ).html( extensionData.length );
+
+            var unqiueEntities = 0;
+            var referencedEntities = 0;
+
+            jQuery.each( extensionData, function( index, value ) {
+                    unqiueEntities += value.unique_entities;
+                    referencedEntities += value.referenced_entities;
+                }
+            );
+
+            jQuery( '#doctrine2-unique-entities' ).html( unqiueEntities );
+            jQuery( '#doctrine2-referenced-entities' ).html( referencedEntities );
+
         } );
     })();
 </script>
