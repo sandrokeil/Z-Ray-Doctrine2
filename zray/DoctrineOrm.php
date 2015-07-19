@@ -9,6 +9,7 @@
 
 namespace Sake\ZRayDoctrine2;
 
+use Doctrine\Common\Cache\Cache;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Statement;
 use Doctrine\ORM\EntityManager;
@@ -45,7 +46,125 @@ class DoctrineOrm
      */
     protected $queryNumber = 0;
 
+    /**
+     * Last query to set parameters from persister
+     *
+     * @var string
+     */
     protected $lastQuery = '';
+
+    /**
+     * Cache settings
+     */
+    protected $cache = [
+        'metadata' => [
+            'name' => 'Metadata Cache',
+            'status' => 'none used (check your cache settings)'
+        ],
+        'query' => [
+            'name' => 'Query Cache',
+            'status' => 'none used (check your cache settings)'
+        ],
+        'result' => [
+            'name' => 'Result Cache',
+            'status' => 'none used (check your cache settings)'
+        ],
+        'hydration' => [
+            'name' => 'Hydration Cache',
+            'status' => 'none used (check your cache settings)'
+        ],
+        'secondLevel' => [
+            'name' => 'Second Level Cache',
+            'status' => 'none used (check your cache settings)'
+        ],
+    ];
+
+    /**
+     * Collects queries from \Doctrine\ORM\Persisters\Entity\BasicEntityPersister
+     *
+     * @param array $context
+     * @param array $storage
+     */
+    public function cache($context, &$storage)
+    {
+        // dont break z-ray
+        if (empty($context['functionArgs'][0])
+            || !$context['functionArgs'][0] instanceof Cache
+        ) {
+            return;
+        }
+
+        switch (get_class($context['functionArgs'][0])) {
+            case 'Doctrine\Common\Cache\PhpFileCache':
+                $status = 'File cache used';
+                break;
+            case 'Doctrine\Common\Cache\FilesystemCache':
+                $status = 'File cache used';
+                break;
+            case '\Doctrine\Common\Cache\ApcCache':
+                $status = 'APC cache used';
+                break;
+            case 'Doctrine\Common\Cache\ArrayCache':
+                $status = 'Array cache used';
+                break;
+            case 'Doctrine\Common\Cache\MemcacheCache':
+                $status = 'Memcache cache used';
+                break;
+            case 'Doctrine\Common\Cache\MemcachedCache':
+                $status = 'Memcached cache used';
+                break;
+            case 'Doctrine\Common\Cache\MongoDBCache':
+                $status = 'MongoDB cache used';
+                break;
+            case 'Doctrine\Common\Cache\PredisCache':
+                $status = 'Predis cache used';
+                break;
+            case 'Doctrine\Common\Cache\RedisCache':
+                $status = 'Redis cache used';
+                break;
+            case 'Doctrine\Common\Cache\RiakCache':
+                $status = 'Riak cache used';
+                break;
+            case 'Doctrine\Common\Cache\SQLite3Cache':
+                $status = 'SQLite3 cache used';
+                break;
+            case 'Doctrine\Common\Cache\VoidCache':
+                $status = 'Void cache used';
+                break;
+            case 'Doctrine\Common\Cache\WinCacheCache':
+                $status = 'Win Cache used';
+                break;
+            case 'Doctrine\Common\Cache\XcacheCache':
+                $status = 'Xcache used';
+                break;
+            case 'Doctrine\Common\Cache\ZendDataCache':
+                $status = 'Zend Data cache used';
+                break;
+            default:
+                $status = 'unknown';
+                break;
+        }
+
+        switch ($context['functionName']) {
+            case 'Doctrine\ORM\Configuration::setMetadataCacheImpl':
+                $this->cache['metadata']['status'] = $status;
+                break;
+            case 'Doctrine\ORM\Configuration::setSecondLevelCacheEnabled':
+                $this->cache['query']['status'] = $status;
+                break;
+            case 'Doctrine\DBAL\Configuration::setResultCacheImpl':
+                $this->cache['result']['status'] = $status;
+                break;
+            case 'Doctrine\ORM\Configuration::setQueryCacheImpl':
+                $this->cache['secondLevel']['status'] = $status;
+                break;
+            case 'Doctrine\ORM\Configuration::setHydrationCacheImpl':
+                $this->cache['hydration']['status'] = $status;
+                break;
+            default:
+                break;
+        }
+    }
 
     /**
      * Collects queries from \Doctrine\ORM\Persisters\Entity\BasicEntityPersister
@@ -256,6 +375,9 @@ class DoctrineOrm
         foreach ($this->queries as $query => $data) {
             $storage['queries'][$query] = $data;
         }
+
+        // collect cache
+        $storage['cache'] = $this->cache;
     }
 
     /**

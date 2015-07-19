@@ -26,6 +26,14 @@ class Module extends \ZRay\ZRayModule
                 'entities' => true,
             ),
             'panels' => array(
+                'cache' => array(
+                    'display' => true,
+                    'logo' => 'logo.png',
+                    'menuTitle' => 'Cache',
+                    'panelTitle' => 'Doctrine 2 Cache',
+                    'searchId' => 'doctrine-cache-search',
+                    'pagerId' => 'doctrine-cache-pager',
+                ),
                 'entities' => array(
                     'display' => true,
                     'logo' => 'logo.png',

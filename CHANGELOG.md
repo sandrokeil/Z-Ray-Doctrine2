@@ -8,6 +8,7 @@
 * Added SQL transaction tracking
 * Added query syntax highlighting expand text support (show more)
 * Added query number
+* Added cache panel
 
 ## Version 1.0.0 (2015-05-07)
 

@@ -12,14 +12,11 @@ namespace Sake\ZRayDoctrine2;
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'DoctrineOrm.php';
 
 // Allocate ZRayExtension for namespace "doctrine2"
-$zre = new \ZRayExtension('doctrine2');
+$zre = new \ZRayExtension('doctrine2', true); // we have no real starting point
 
 $zre->setMetadata(array(
     'logo' => __DIR__ . DIRECTORY_SEPARATOR . 'logo.png',
 ));
-
-// needed to get first query, connect() is to late
-$zre->setEnabledAfter('Doctrine\DBAL\Connection::__construct');
 
 $doctrine = new DoctrineOrm();
 
@@ -28,12 +25,23 @@ $zre->traceFunction('Doctrine\DBAL\Connection::executeUpdate', function(){}, arr
 $zre->traceFunction('Doctrine\DBAL\Connection::executeQuery', function(){}, array($doctrine, 'connection'));
 $zre->traceFunction('Doctrine\DBAL\Connection::executeCacheQuery', function(){}, array($doctrine, 'connection'));
 $zre->traceFunction('Doctrine\DBAL\Statement::__construct', function(){}, array($doctrine, 'statement'));
-$zre->traceFunction('Doctrine\ORM\Persisters\Entity\BasicEntityPersister::prepareInsertData', function(){}, array($doctrine, 'persister'));
 $zre->traceFunction('Doctrine\DBAL\Connection::beginTransaction', function(){}, array($doctrine, 'statement'));
 $zre->traceFunction('Doctrine\DBAL\Connection::commit', function(){}, array($doctrine, 'statement'));
 $zre->traceFunction('Doctrine\DBAL\Connection::rollback', function(){}, array($doctrine, 'statement'));
 
+// Cache
+$zre->traceFunction('Doctrine\ORM\Configuration::setSecondLevelCacheEnabled', function(){}, array($doctrine, 'cache'));
+$zre->traceFunction('Doctrine\ORM\Configuration::setMetadataCacheImpl', function(){}, array($doctrine, 'cache'));
+$zre->traceFunction('Doctrine\ORM\Configuration::setQueryCacheImpl', function(){}, array($doctrine, 'cache'));
+$zre->traceFunction('Doctrine\ORM\Configuration::setHydrationCacheImpl', function(){}, array($doctrine, 'cache'));
+$zre->traceFunction('Doctrine\DBAL\Configuration::setResultCacheImpl', function(){}, array($doctrine, 'cache'));
+
 // Doctrine\ORM
+$zre->traceFunction(
+    'Doctrine\ORM\Persisters\Entity\BasicEntityPersister::prepareInsertData',
+    function(){},
+    array($doctrine, 'persister')
+);
 $zre->traceFunction('Doctrine\ORM\UnitOfWork::createEntity', function(){}, array($doctrine, 'unitOfWork'));
 $zre->traceFunction('Doctrine\ORM\UnitOfWork::__construct', function(){}, array($doctrine, 'entityMapping'));
 
