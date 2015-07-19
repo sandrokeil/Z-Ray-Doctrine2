@@ -28,14 +28,67 @@ $tableParamsDoctrineQueries = array(
         var maintable = zray.createTable( storage, jQuery( '#<?php echo $tableParamsDoctrineQueries['tableId']; ?>' ) );
         maintable.setColumns( [
             {
+                "label": "#",
+                "propertyName": "queryNumber",
+                "sortable": true,
+                "width": '5%',
+                "tooltip": "Order",
+                "getHtml": function( value, record ) {
+                    return value;
+                }
+            },
+            {
                 "label": "Query",
                 "propertyName": "query",
                 "sortable": true,
-                "width": '40%',
+                "width": '55%',
                 attributes: { 'class': 'zdb-monospace' },
                 "tooltip": "The executed query",
                 "getHtml": function( value, record ) {
-                    return value;
+                    /* this code is from zend server queries component */
+                    if ( value.trim() == '' ) {
+                        return '<?php echo _t('[Empty query]'); ?>';
+                    }
+
+                    var contentWrapper = $zendDevBar( '<div></div>' );
+
+                    var queryDisplayPosition = 0;
+                    if ( record.transactionId != -1 ) {
+                        if ( value.match( /^BEGIN/i ) ) {
+                            queryDisplayPosition = 0;
+                            contentWrapper.addClass( 'zdb-querytable-row-transaction-start' );
+                        } else if ( value.match( /^COMMIT/i ) || value.match( /^ROLLBACK/i ) ) {
+                            queryDisplayPosition = 2;
+                            contentWrapper.addClass( 'zdb-querytable-row-transaction-end' );
+                        } else {
+                            queryDisplayPosition = 1;
+                        }
+                        contentWrapper.addClass( 'zdb-querytable-row-transaction' );
+                    }
+
+                    contentWrapper.attr( 'transactionorder', record.transactionId )
+                        .attr( 'transactionpos', queryDisplayPosition );
+
+                    var expandor = zendDevBar.expendedText( value, null, function( sqlCode ) {
+                        // highlight sqlCode param. steps:
+                        // create element, add it to the doc, highlight its code, get the html and remove elem from the doc
+                        var $elem = $zendDevBar( '<span>' ).text( sqlCode );
+                        $zendDevBar( 'body' ).append( $elem );
+                        if ( window.hljs ) hljs.highlightBlock( $elem.get( 0 ) );
+                        var highlighedCodeHtml = $elem.html();
+                        $elem.remove();
+                        return highlighedCodeHtml;
+                    } );
+
+                    if ( typeof expandor != 'string' ) {
+                        $zendDevBar( expandor ).on( 'expandingTextChanged', function( event ) {
+                            var searchTerm = zendDevBar.getStorage( 'queries' ).searchTerm;
+                            $zendDevBar( event.target ).highlight( searchTerm );
+                        } );
+                    }
+
+                    contentWrapper.html( expandor );
+                    return contentWrapper;
                 }
             },
             {
@@ -54,16 +107,6 @@ $tableParamsDoctrineQueries = array(
                 "sortable": true,
                 "width": '20%',
                 "tooltip": "The number of cached queries",
-                "getHtml": function( value, record ) {
-                    return value;
-                }
-            },
-            {
-                "label": "Params",
-                "propertyName": "params",
-                "sortable": false,
-                "width": '20%',
-                "tooltip": "Params",
                 "getHtml": function( value, record ) {
                     return value;
                 }

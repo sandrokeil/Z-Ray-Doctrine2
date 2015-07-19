@@ -4,7 +4,10 @@
 
 * All entity mappings now recorded
 * Added count of executed queries with cache info
-* Added parameter list of queries
+* Added parameters to queries
+* Added SQL transaction tracking
+* Added query syntax highlighting expand text support (show more)
+* Added query number
 
 ## Version 1.0.0 (2015-05-07)
 

@@ -24,9 +24,14 @@ $zre->setEnabledAfter('Doctrine\DBAL\Connection::__construct');
 $doctrine = new DoctrineOrm();
 
 // Doctrine\DBAL
-$zre->traceFunction('Doctrine\DBAL\Connection::executeUpdate', function(){}, array($doctrine, 'queries'));
-$zre->traceFunction('Doctrine\DBAL\Connection::executeQuery', function(){}, array($doctrine, 'queries'));
-$zre->traceFunction('Doctrine\DBAL\Connection::executeCacheQuery', function(){}, array($doctrine, 'queries'));
+$zre->traceFunction('Doctrine\DBAL\Connection::executeUpdate', function(){}, array($doctrine, 'connection'));
+$zre->traceFunction('Doctrine\DBAL\Connection::executeQuery', function(){}, array($doctrine, 'connection'));
+$zre->traceFunction('Doctrine\DBAL\Connection::executeCacheQuery', function(){}, array($doctrine, 'connection'));
+$zre->traceFunction('Doctrine\DBAL\Statement::__construct', function(){}, array($doctrine, 'statement'));
+$zre->traceFunction('Doctrine\ORM\Persisters\Entity\BasicEntityPersister::prepareInsertData', function(){}, array($doctrine, 'persister'));
+$zre->traceFunction('Doctrine\DBAL\Connection::beginTransaction', function(){}, array($doctrine, 'statement'));
+$zre->traceFunction('Doctrine\DBAL\Connection::commit', function(){}, array($doctrine, 'statement'));
+$zre->traceFunction('Doctrine\DBAL\Connection::rollback', function(){}, array($doctrine, 'statement'));
 
 // Doctrine\ORM
 $zre->traceFunction('Doctrine\ORM\UnitOfWork::createEntity', function(){}, array($doctrine, 'unitOfWork'));

@@ -9,6 +9,8 @@
 
 namespace Sake\ZRayDoctrine2;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Statement;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 
@@ -37,47 +39,134 @@ class DoctrineOrm
     protected $queries = [];
 
     /**
+     * Query number
+     *
+     * @var int
+     */
+    protected $queryNumber = 0;
+
+    protected $lastQuery = '';
+
+    /**
+     * Collects queries from \Doctrine\ORM\Persisters\Entity\BasicEntityPersister
+     *
+     * @param array $context
+     * @param array $storage
+     */
+    public function persister($context, &$storage)
+    {
+        // dont break z-ray
+        if (empty($context['functionArgs'][0])
+            || !$this->lastQuery
+            || empty($context['returnValue'])
+        ) {
+            $this->lastQuery = '';
+            return;
+        }
+
+        $params = array();
+
+        foreach ($context['returnValue'] as &$values) {
+            $params += $values;
+        }
+
+        $this->queries[$this->lastQuery]['query'] = $this->formatQueryWithSprintf(
+            $this->queries[$this->lastQuery]['query'],
+            $params
+        );
+        $this->lastQuery = '';
+    }
+
+    /**
      * Collects all queries from Doctrine\DBAL\Connection
      *
      * @param array $context
      * @param array $storage
      */
-    public function queries($context, &$storage)
+    public function connection($context, &$storage)
     {
         // dont break z-ray
         if (empty($context['functionArgs'][0])) {
             return;
         }
-        $query = $context['functionArgs'][0];
-        $params = '';
+        $query = trim($context['functionArgs'][0]);
+        $queryWithParams = $query;
+
 
         if (!empty($context['functionArgs'][1])) {
-            $params = print_r($context['functionArgs'][1], true);
+            $queryWithParams = $this->formatQueryWithSprintf($queryWithParams, $context['functionArgs'][1]);
         }
 
         if (!isset($this->queries[$query])) {
+            $this->queryNumber++;
+
             $this->queries[$query] = [
-                'query' => $query,
+                'query' => $queryWithParams,
                 'number' => 0,
                 'cached' => 0,
-                'params' => $params,
+                'queryNumber' => $this->queryNumber,
             ];
         }
 
-        if ($context['functionName'] == 'Doctrine\DBAL\Connection::executeCacheQuery') {
+        if ($context['functionName'] === 'Doctrine\DBAL\Connection::executeCacheQuery') {
             $this->queries[$query]['cached']++;
             return;
         }
-        if (!empty($context['functionArgs'][1])
-            && $this->queries[$query]['cached'] === 0
-        ) {
-            if (!empty($this->queries[$query]['params'])) {
-                $this->queries[$query]['params'] .= '<hr/>';
-            }
-            $this->queries[$query]['params'] .= $params;
-        }
 
         $this->queries[$query]['number']++;
+    }
+
+    /**
+     * Collects all queries from Doctrine\DBAL\Statement and SQL transaction calls
+     *
+     * @param array $context
+     * @param array $storage
+     */
+    public function statement($context, &$storage)
+    {
+        // dont break z-ray
+        if (!$context['this'] instanceof Statement
+            && !$context['this'] instanceof Connection
+        ) {
+            return;
+        }
+
+        switch ($context['functionName']) {
+            case 'Doctrine\DBAL\Connection::beginTransaction':
+                $query = 'Begin Transaction';
+                $this->queryNumber++;
+                break;
+            case 'Doctrine\DBAL\Connection::rollback':
+                $query = 'Rollback';
+                $this->queryNumber++;
+                break;
+            case 'Doctrine\DBAL\Connection::commit':
+                $query = 'Commit';
+                $this->queryNumber++;
+                break;
+            case 'Doctrine\DBAL\Statement::__construct':
+                $query = $context['locals']['sql'];
+                $this->lastQuery = $query;
+                $this->queryNumber++;
+                break;
+            default:
+                $query = '';
+                break;
+        }
+
+        $query = trim($query);
+
+        if ($query) {
+            if (!isset($this->queries[$query])) {
+                $this->queries[$query] = [
+                    'query' => $query,
+                    'number' => 1,
+                    'cached' => 0,
+                    'queryNumber' => $this->queryNumber,
+                ];
+            }
+            return;
+        }
     }
 
     /**
@@ -169,7 +258,6 @@ class DoctrineOrm
         }
     }
 
-
     /**
      * Only for listen to the php shutdown event to collect all data
      *
@@ -178,4 +266,37 @@ class DoctrineOrm
     public function shutdown()
     {
     }
+
+    /**
+     * Format query with params
+     *
+     * @param string $query
+     * @param array $params
+     * @return string
+     */
+    private function formatQueryWithSprintf($query, array $params)
+    {
+        if (isset($params[0][0])) {
+            foreach ($params as &$param) {
+                $param = implode(',', $param);
+            }
+        }
+        // convert params for query string
+        foreach ($params as &$type) {
+            if (null === $type) {
+                $type = 'null';
+                continue;
+            }
+            if (is_string($type)) {
+                $type = "'" . $type . "'";
+                continue;
+            }
+            if (!is_scalar($type)) {
+                $type = gettype($type);
+            }
+        }
+        array_unshift($params, str_replace('?', '%s', $query));
+        return call_user_func_array('sprintf', $params);
+    }
+
 }
