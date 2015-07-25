@@ -24,11 +24,11 @@ $doctrine = new DoctrineOrm();
 $zre->traceFunction('Doctrine\DBAL\Connection::executeUpdate', function(){}, array($doctrine, 'connection'));
 $zre->traceFunction('Doctrine\DBAL\Connection::executeQuery', function(){}, array($doctrine, 'connection'));
 $zre->traceFunction('Doctrine\DBAL\Connection::executeCacheQuery', function(){}, array($doctrine, 'connection'));
-
-$zre->traceFunction('Doctrine\DBAL\Statement::__construct', function(){}, array($doctrine, 'statement'));
 $zre->traceFunction('Doctrine\DBAL\Connection::beginTransaction', function(){}, array($doctrine, 'statement'));
 $zre->traceFunction('Doctrine\DBAL\Connection::commit', function(){}, array($doctrine, 'statement'));
 $zre->traceFunction('Doctrine\DBAL\Connection::rollback', function(){}, array($doctrine, 'statement'));
+
+$zre->traceFunction('Doctrine\DBAL\Statement::__construct', function(){}, array($doctrine, 'statement'));
 
 // Cache
 $zre->traceFunction('Doctrine\ORM\Configuration::setSecondLevelCacheEnabled', function(){}, array($doctrine, 'cache'));

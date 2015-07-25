@@ -189,7 +189,7 @@ class DoctrineOrm
             return;
         }
 
-        $params = array();
+        $params = [];
 
         foreach ($context['returnValue'] as &$values) {
             $params += $values;
@@ -223,7 +223,7 @@ class DoctrineOrm
             list($queryWithParams, $params, $types) = \Doctrine\DBAL\SQLParserUtils::expandListParameters(
                 $query,
                 $context['functionArgs'][1],
-                $context['functionArgs'][2]
+                empty($context['functionArgs'][2]) ? [] : $context['functionArgs'][2]
             );
             $queryWithParams = $this->formatQueryWithSprintf($queryWithParams, $params);
         }
@@ -268,32 +268,35 @@ class DoctrineOrm
             case 'Doctrine\DBAL\Connection::beginTransaction':
                 $query = 'Begin Transaction';
                 $this->queryNumber++;
+                $queryId = $query . $this->queryNumber;
                 break;
             case 'Doctrine\DBAL\Connection::rollback':
                 $query = 'Rollback';
                 $this->queryNumber++;
+                $queryId = $query . $this->queryNumber;
                 break;
             case 'Doctrine\DBAL\Connection::commit':
                 $query = 'Commit';
                 $this->queryNumber++;
+                $queryId = $query . $this->queryNumber;
                 break;
             case 'Doctrine\DBAL\Statement::__construct':
-                $query = $context['locals']['sql'];
-                $this->lastQuery = $query;
                 $this->queryNumber++;
+                $query = isset($context['locals']['sql']) ? $context['locals']['sql'] : 'NO QUERY';
+                $queryId = $query . $this->queryNumber;
+                $this->lastQuery = $this->getQueryId($queryId);
                 break;
             default:
                 $query = '';
+                $queryId = '';
                 break;
         }
-
-        $query = trim($query);
 
         if (empty($query)) {
             return;
         }
 
-        $queryId = $this->getQueryId($query);
+        $queryId = $this->getQueryId($queryId);
 
         if (!isset($this->queries[$queryId])) {
             $this->queries[$queryId] = [
@@ -448,7 +451,7 @@ class DoctrineOrm
         }
 
         if (is_array($type)) {
-            return implode(',', array_map(array($this, 'getType'), $type));
+            return implode(',', array_map([$this, 'getType'], $type));
         }
 
         if (!is_scalar($type)) {
