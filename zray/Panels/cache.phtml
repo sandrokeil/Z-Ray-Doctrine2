@@ -13,7 +13,8 @@ $tableParamsDoctrineCache = array(
 );
 ?>
 <p style="padding:5px 10px">
-    Displays information about Doctrine 2 caches.
+    Displays information about
+    <a href="http://doctrine-orm.readthedocs.org/en/latest/reference/caching.html" target="_blank" title="Doctrine 2 cache documentation">Doctrine 2 caches</a>.
 </p>
 <?= $this->zrayTable($tableParamsDoctrineCache); ?>
 
@@ -28,7 +29,7 @@ $tableParamsDoctrineCache = array(
                 "label": "Cache type",
                 "propertyName": "name",
                 "sortable": true,
-                "width": '60%',
+                "width": '20%',
                 "tooltip": "Doctrine 2 cache type",
                 "getHtml": function( value, record ) {
                     return value;
@@ -38,7 +39,7 @@ $tableParamsDoctrineCache = array(
                 "label": "Status",
                 "propertyName": "status",
                 "sortable": true,
-                "width": '40%',
+                "width": '80%',
                 "tooltip": "Which cache driver is used",
                 "getHtml": function( value, record ) {
                     return value;

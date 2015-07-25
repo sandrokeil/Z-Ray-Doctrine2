@@ -59,23 +59,23 @@ class DoctrineOrm
     protected $cache = [
         'metadata' => [
             'name' => 'Metadata Cache',
-            'status' => 'none used (check your cache settings)'
+            'status' => 'none used'
         ],
         'query' => [
             'name' => 'Query Cache',
-            'status' => 'none used (check your cache settings)'
+            'status' => 'none used'
         ],
         'result' => [
             'name' => 'Result Cache',
-            'status' => 'none used (check your cache settings)'
+            'status' => 'none used'
         ],
         'hydration' => [
             'name' => 'Hydration Cache',
-            'status' => 'none used (check your cache settings)'
+            'status' => 'none used'
         ],
         'secondLevel' => [
             'name' => 'Second Level Cache',
-            'status' => 'none used (check your cache settings)'
+            'status' => 'none used'
         ],
     ];
 
@@ -89,12 +89,18 @@ class DoctrineOrm
     {
         // dont break z-ray
         if (empty($context['functionArgs'][0])
-            || !$context['functionArgs'][0] instanceof Cache
+            || (!$context['functionArgs'][0] instanceof Cache && !is_object($context['returnValue']))
         ) {
             return;
         }
 
-        switch (get_class($context['functionArgs'][0])) {
+        if ($context['functionArgs'][0] instanceof Cache) {
+            $class = get_class($context['functionArgs'][0]);
+        } else {
+            $class = get_class($context['returnValue']);
+        }
+
+        switch ($class) {
             case 'Doctrine\Common\Cache\PhpFileCache':
                 $status = 'File cache used';
                 break;
@@ -141,7 +147,7 @@ class DoctrineOrm
                 $status = 'Zend Data cache used';
                 break;
             default:
-                $status = 'unknown';
+                $status = $class . ' used';
                 break;
         }
 
@@ -211,15 +217,23 @@ class DoctrineOrm
         $query = trim($context['functionArgs'][0]);
         $queryWithParams = $query;
 
-
+        // parameters detected
         if (!empty($context['functionArgs'][1])) {
-            $queryWithParams = $this->formatQueryWithSprintf($queryWithParams, $context['functionArgs'][1]);
+            # doctrine does it right
+            list($queryWithParams, $params, $types) = \Doctrine\DBAL\SQLParserUtils::expandListParameters(
+                $query,
+                $context['functionArgs'][1],
+                $context['functionArgs'][2]
+            );
+            $queryWithParams = $this->formatQueryWithSprintf($queryWithParams, $params);
         }
 
-        if (!isset($this->queries[$query])) {
+        $queryId = $this->getQueryId($queryWithParams);
+
+        if (!isset($this->queries[$queryId])) {
             $this->queryNumber++;
 
-            $this->queries[$query] = [
+            $this->queries[$queryId] = [
                 'query' => $queryWithParams,
                 'number' => 0,
                 'cached' => 0,
@@ -228,11 +242,11 @@ class DoctrineOrm
         }
 
         if ($context['functionName'] === 'Doctrine\DBAL\Connection::executeCacheQuery') {
-            $this->queries[$query]['cached']++;
+            $this->queries[$queryId]['cached']++;
             return;
         }
 
-        $this->queries[$query]['number']++;
+        $this->queries[$queryId]['number']++;
     }
 
     /**
@@ -275,16 +289,19 @@ class DoctrineOrm
 
         $query = trim($query);
 
-        if ($query) {
-            if (!isset($this->queries[$query])) {
-                $this->queries[$query] = [
-                    'query' => $query,
-                    'number' => 1,
-                    'cached' => 0,
-                    'queryNumber' => $this->queryNumber,
-                ];
-            }
+        if (empty($query)) {
             return;
+        }
+
+        $queryId = $this->getQueryId($query);
+
+        if (!isset($this->queries[$queryId])) {
+            $this->queries[$queryId] = [
+                'query' => $query,
+                'number' => 1,
+                'cached' => 0,
+                'queryNumber' => $this->queryNumber,
+            ];
         }
     }
 
@@ -398,27 +415,56 @@ class DoctrineOrm
      */
     private function formatQueryWithSprintf($query, array $params)
     {
-        if (isset($params[0][0])) {
-            foreach ($params as &$param) {
-                $param = implode(',', $param);
-            }
-        }
         // convert params for query string
-        foreach ($params as &$type) {
-            if (null === $type) {
-                $type = 'null';
-                continue;
-            }
-            if (is_string($type)) {
-                $type = "'" . $type . "'";
-                continue;
-            }
-            if (!is_scalar($type)) {
-                $type = gettype($type);
-            }
+        foreach ($params as $key => $type) {
+            $query = preg_replace('/\?/', $this->getType($type), $query, 1);
         }
-        array_unshift($params, str_replace('?', '%s', $query));
-        return call_user_func_array('sprintf', $params);
+        return $query;
     }
 
+    /**
+     * Returns converted value for query
+     *
+     * @param mixed $type Param type
+     * @return string Converted value for query
+     */
+    private function getType($type)
+    {
+        if (null === $type) {
+            return 'null';
+        }
+        if (is_string($type)) {
+            return "'" . $type . "'";
+        }
+        if (is_object($type)) {
+            if (method_exists($type, '__toString')) {
+                return "'" . ((string)$type) . "'";
+            }
+            if ($type instanceof \DateTime) {
+                # driver independent
+                return "'" . $type->format('Y-m-d H:i:s') . "'";
+            }
+            return get_class($type);
+        }
+
+        if (is_array($type)) {
+            return implode(',', array_map(array($this, 'getType'), $type));
+        }
+
+        if (!is_scalar($type)) {
+            return gettype($type);
+        }
+        return $type;
+    }
+
+    /**
+     * Returns a unique query id
+     *
+     * @param string $query
+     * @return string Unique id
+     */
+    private function getQueryId($query)
+    {
+        return md5($query);
+    }
 }

@@ -24,6 +24,7 @@ $doctrine = new DoctrineOrm();
 $zre->traceFunction('Doctrine\DBAL\Connection::executeUpdate', function(){}, array($doctrine, 'connection'));
 $zre->traceFunction('Doctrine\DBAL\Connection::executeQuery', function(){}, array($doctrine, 'connection'));
 $zre->traceFunction('Doctrine\DBAL\Connection::executeCacheQuery', function(){}, array($doctrine, 'connection'));
+
 $zre->traceFunction('Doctrine\DBAL\Statement::__construct', function(){}, array($doctrine, 'statement'));
 $zre->traceFunction('Doctrine\DBAL\Connection::beginTransaction', function(){}, array($doctrine, 'statement'));
 $zre->traceFunction('Doctrine\DBAL\Connection::commit', function(){}, array($doctrine, 'statement'));
@@ -31,10 +32,15 @@ $zre->traceFunction('Doctrine\DBAL\Connection::rollback', function(){}, array($d
 
 // Cache
 $zre->traceFunction('Doctrine\ORM\Configuration::setSecondLevelCacheEnabled', function(){}, array($doctrine, 'cache'));
+$zre->traceFunction('Doctrine\ORM\Configuration::getSecondLevelCacheConfiguration', function(){}, array($doctrine, 'cache'));
 $zre->traceFunction('Doctrine\ORM\Configuration::setMetadataCacheImpl', function(){}, array($doctrine, 'cache'));
+$zre->traceFunction('Doctrine\ORM\Configuration::getMetadataCacheImpl', function(){}, array($doctrine, 'cache'));
 $zre->traceFunction('Doctrine\ORM\Configuration::setQueryCacheImpl', function(){}, array($doctrine, 'cache'));
+$zre->traceFunction('Doctrine\ORM\Configuration::getQueryCacheImpl', function(){}, array($doctrine, 'cache'));
 $zre->traceFunction('Doctrine\ORM\Configuration::setHydrationCacheImpl', function(){}, array($doctrine, 'cache'));
+$zre->traceFunction('Doctrine\ORM\Configuration::getHydrationCacheImpl', function(){}, array($doctrine, 'cache'));
 $zre->traceFunction('Doctrine\DBAL\Configuration::setResultCacheImpl', function(){}, array($doctrine, 'cache'));
+$zre->traceFunction('Doctrine\DBAL\Configuration::getResultCacheImpl', function(){}, array($doctrine, 'cache'));
 
 // Doctrine\ORM
 $zre->traceFunction(

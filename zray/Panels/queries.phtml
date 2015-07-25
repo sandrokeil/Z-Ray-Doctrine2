@@ -17,6 +17,7 @@ $tableParamsDoctrineQueries = array(
     This is a list of executed queries with cache information.
     <span id="doctrine2-number-of-queries" style="font-weight: bold"></span> queries were sent to the database server.
     <span id="doctrine2-number-of-cached-queries" style="font-weight: bold"></span> queries were cached.
+    <span class="zdb-pull-right zdb-expand-all" style="padding-right: 7%" onclick="zendDevBar.expandTableRows(this, '#table-doctrine-queries')">Expand all</span>
 </p>
 <?= $this->zrayTable($tableParamsDoctrineQueries); ?>
 
@@ -41,7 +42,7 @@ $tableParamsDoctrineQueries = array(
                 "label": "Query",
                 "propertyName": "query",
                 "sortable": true,
-                "width": '55%',
+                "width": '75%',
                 attributes: { 'class': 'zdb-monospace' },
                 "tooltip": "The executed query",
                 "getHtml": function( value, record ) {
@@ -95,7 +96,7 @@ $tableParamsDoctrineQueries = array(
                 "label": "Number",
                 "propertyName": "number",
                 "sortable": true,
-                "width": '20%',
+                "width": '10%',
                 "tooltip": "The number of executions e.g. with different parameters",
                 "getHtml": function( value, record ) {
                     return value;
@@ -105,7 +106,7 @@ $tableParamsDoctrineQueries = array(
                 "label": "Cached",
                 "propertyName": "cached",
                 "sortable": true,
-                "width": '20%',
+                "width": '10%',
                 "tooltip": "The number of cached queries",
                 "getHtml": function( value, record ) {
                     return value;
