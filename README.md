@@ -10,7 +10,7 @@ This is a plugin to add functionality to the Zend Server Z-Ray. It will result i
 
  * **Every change is tracked** Want to know whats new? Take a look at [CHANGELOG.md](CHANGELOG.md)
  * **Listen to your ideas** Have a great idea? Bring your pull request or open a new issue. See [CONTRIBUTING.md](CONTRIBUTING.md)
- * **Looking for a demo** You can use the [Shopware demo]() to try out the Doctrine 2 Z-Ray plugin 
+ * **Looking for a demo** You can use the [Demo Project](https://github.com/sandrokeil/Z-Ray-Doctrine2-Demo) to try out the Doctrine 2 Z-Ray plugin 
 
 ## Installation
 Simply install the Doctrine 2 Z-Ray plugin via the Zend Server plugin gallery.
