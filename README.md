@@ -36,10 +36,10 @@ There are the following columns:
 The `Queries` tab displays information about executed queries. There are the following columns:
 
  * **Query**: The executed query with parameter
- * **Number**: The number of executions e.g. with different parameters
+ * **Number**: The number of executions
  * **Cached**: The number of cached queries
 
-Note that real queries are calculated with `Number - Cached`.
+Note: real queries are calculated as `Number - Cached`.
 
 ### Tab Cache
 ![Tab Doctrine 2 Queries](docs/img/tab_cache.png)
