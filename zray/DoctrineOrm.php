@@ -195,7 +195,7 @@ class DoctrineOrm
             $params += $values;
         }
 
-        $this->queries[$this->lastQuery]['query'] = $this->formatQueryWithSprintf(
+        $this->queries[$this->lastQuery]['query'] = $this->formatQuery(
             $this->queries[$this->lastQuery]['query'],
             $params
         );
@@ -225,7 +225,7 @@ class DoctrineOrm
                 $context['functionArgs'][1],
                 empty($context['functionArgs'][2]) ? [] : $context['functionArgs'][2]
             );
-            $queryWithParams = $this->formatQueryWithSprintf($queryWithParams, $params);
+            $queryWithParams = $this->formatQuery($queryWithParams, $params);
         }
 
         $queryId = $this->getQueryId($queryWithParams);
@@ -416,22 +416,22 @@ class DoctrineOrm
      * @param array $params
      * @return string
      */
-    private function formatQueryWithSprintf($query, array $params)
+    private function formatQuery($query, array $params)
     {
         // convert params for query string
         foreach ($params as $key => $type) {
-            $query = preg_replace('/\?/', $this->getType($type), $query, 1);
+            $query = preg_replace('/\?/', $this->formatType($type), $query, 1);
         }
         return $query;
     }
 
     /**
-     * Returns converted value for query
+     * Returns formatted type for query
      *
      * @param mixed $type Param type
      * @return string Converted value for query
      */
-    private function getType($type)
+    private function formatType($type)
     {
         if (null === $type) {
             return 'null';
@@ -451,7 +451,7 @@ class DoctrineOrm
         }
 
         if (is_array($type)) {
-            return implode(',', array_map([$this, 'getType'], $type));
+            return implode(',', array_map([$this, 'formatType'], $type));
         }
 
         if (!is_scalar($type)) {
