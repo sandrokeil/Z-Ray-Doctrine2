@@ -1,0 +1,84 @@
+<?php
+/**
+ * Sake
+ *
+ * @link      http://github.com/sandrokeil/Z-Ray-Doctrine2 for the canonical source repository
+ * @copyright Copyright (c) 2015 Sandro Keil
+ * @license   http://github.com/sandrokeil/Z-Ray-Doctrine2/blob/master/LICENSE.txt New BSD License
+ */
+
+$tableParamsDoctrineEntities = array(
+    'tableId' => 'table-doctrine-entities',
+    'tableWidth' => '4',
+);
+?>
+<p style="padding:5px 10px">
+    <span id="doctrine2-number-of-entities" style="font-weight: bold"></span> entity mappings exists.
+    <span id="doctrine2-unique-entities" style="font-weight: bold"></span> unique entities and
+    <span id="doctrine2-referenced-entities" style="font-weight: bold"></span> entity references were created.
+</p>
+<?= $this->zrayTable($tableParamsDoctrineEntities); ?>
+
+<script type="text/javascript">
+    (function() {
+        var storage = zray.getStorage( 'doctrineEntities' );
+
+        // create main table
+        var maintable = zray.createTable( storage, jQuery( '#<?php echo $tableParamsDoctrineEntities['tableId']; ?>' ) );
+        maintable.setColumns( [
+            {
+                "label": "Entity",
+                "propertyName": "entity",
+                "sortable": true,
+                "width": '60%',
+                "tooltip": "Entity Namespace",
+                "getHtml": function( value, record ) {
+                    return value;
+                }
+            },
+            {
+                "label": "Number of unique entities",
+                "propertyName": "unique_entities",
+                "sortable": true,
+                "width": '20%',
+                "tooltip": "How many unique objects of this entity exist",
+                "getHtml": function( value, record ) {
+                    return value;
+                }
+            },
+            {
+                "label": "Number of referenced entities",
+                "propertyName": "referenced_entities",
+                "sortable": true,
+                "width": '20%',
+                "tooltip": "How many references exist for this entity",
+                "getHtml": function( value, record ) {
+                    return value;
+                }
+            }
+        ] );
+        // create main table - end
+
+        // create pager and search
+        zray.createPager( storage, jQuery( '#<?php echo $params['pagerId']; ?>' ) );
+        zray.createSearch( storage, jQuery( '#<?php echo $params['searchId']; ?>' ), maintable );
+
+        zray.registerDataHandler( 'doctrine2', 'entities', function( extensionData, requestData ) {
+            storage.setData( extensionData );
+            jQuery( '#doctrine2-number-of-entities' ).html( extensionData.length );
+
+            var unqiueEntities = 0;
+            var referencedEntities = 0;
+
+            jQuery.each( extensionData, function( index, value ) {
+                    unqiueEntities += value.unique_entities;
+                    referencedEntities += value.referenced_entities;
+                }
+            );
+
+            jQuery( '#doctrine2-unique-entities' ).html( unqiueEntities );
+            jQuery( '#doctrine2-referenced-entities' ).html( referencedEntities );
+
+        } );
+    })();
+</script>
