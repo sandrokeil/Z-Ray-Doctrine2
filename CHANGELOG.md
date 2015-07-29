@@ -6,7 +6,7 @@
 * Added count of executed queries with cache info
 * Added parameters to queries
 * Added SQL transaction tracking
-* Added query syntax highlighting expand text support (show more / show less)
+* Added query syntax highlighting and expand text support (show more / show less)
 * Added query number
 * Added cache tab
 
