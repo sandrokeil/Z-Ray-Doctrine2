@@ -1,5 +1,8 @@
 # Z-Ray-Doctrine2 CHANGELOG
 
+## 1.2.0 TBA
+* fixed wrong cache detection
+
 ## 1.1.0 (2015-07-27)
 
 * All entity mappings now displayed

@@ -156,13 +156,13 @@ class DoctrineOrm
                 $this->cache['metadata']['status'] = $status;
                 break;
             case 'Doctrine\ORM\Configuration::setSecondLevelCacheEnabled':
-                $this->cache['query']['status'] = $status;
+                $this->cache['secondLevel']['status'] = $status;
                 break;
             case 'Doctrine\DBAL\Configuration::setResultCacheImpl':
                 $this->cache['result']['status'] = $status;
                 break;
             case 'Doctrine\ORM\Configuration::setQueryCacheImpl':
-                $this->cache['secondLevel']['status'] = $status;
+                $this->cache['query']['status'] = $status;
                 break;
             case 'Doctrine\ORM\Configuration::setHydrationCacheImpl':
                 $this->cache['hydration']['status'] = $status;
