@@ -2,6 +2,7 @@
 
 ## 1.2.0 TBA
 * Added events panel with Doctrine 2 and Symfony Doctrine 2 Bridge events
+* Improved query parameter detection
 * fixed wrong cache detection
 
 ## 1.1.0 (2015-07-27)
