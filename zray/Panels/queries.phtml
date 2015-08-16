@@ -17,7 +17,9 @@ $tableParamsDoctrineQueries = array(
     This is a list of executed queries with cache information.
     <span id="doctrine2-number-of-queries" style="font-weight: bold"></span> queries were sent to the database server.
     <span id="doctrine2-number-of-cached-queries" style="font-weight: bold"></span> queries were cached.
-    <span class="zdb-pull-right zdb-expand-all" style="padding-right: 7%" onclick="zendDevBar.expandTableRows(this, '#table-doctrine-queries')">Expand all</span>
+    <span class="zdb-pull-right zdb-expand-all"
+          style="padding-right: 7%"
+          onclick="zendDevBar.expandTableRows(this, '#table-doctrine-queries')">Expand all</span>
 </p>
 <?= $this->zrayTable($tableParamsDoctrineQueries); ?>
 
@@ -83,7 +85,7 @@ $tableParamsDoctrineQueries = array(
 
                     if ( typeof expandor != 'string' ) {
                         $zendDevBar( expandor ).on( 'expandingTextChanged', function( event ) {
-                            var searchTerm = zendDevBar.getStorage( 'queries' ).searchTerm;
+                            var searchTerm = zendDevBar.getStorage( 'doctrineQueries' ).searchTerm;
                             $zendDevBar( event.target ).highlight( searchTerm );
                         } );
                     }

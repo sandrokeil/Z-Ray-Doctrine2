@@ -14,7 +14,9 @@ $tableParamsDoctrineCache = array(
 ?>
 <p style="padding:5px 10px">
     Displays information about
-    <a href="http://doctrine-orm.readthedocs.org/en/latest/reference/caching.html" target="_blank" title="Doctrine 2 cache documentation">Doctrine 2 caches</a>.
+    <a href="http://doctrine-orm.readthedocs.org/en/latest/reference/caching.html"
+       target="_blank"
+       title="Doctrine 2 cache documentation"> Doctrine 2 caches</a>.
 </p>
 <?= $this->zrayTable($tableParamsDoctrineCache); ?>
 
@@ -26,7 +28,7 @@ $tableParamsDoctrineCache = array(
         var maintable = zray.createTable( storage, jQuery( '#<?php echo $tableParamsDoctrineCache['tableId']; ?>' ) );
         maintable.setColumns( [
             {
-                "label": "Cache type",
+                "label": "Type",
                 "propertyName": "name",
                 "sortable": true,
                 "width": '20%',
