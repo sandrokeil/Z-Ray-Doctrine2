@@ -44,13 +44,6 @@ class DoctrineOrm
     protected $queryNumber = 0;
 
     /**
-     * Last query to set parameters from persister
-     *
-     * @var string
-     */
-    protected $lastQuery = '';
-
-    /**
      * Cache settings
      */
     protected $cache = [
