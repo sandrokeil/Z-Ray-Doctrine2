@@ -51,6 +51,12 @@ $zre->traceFunction(
 $zre->traceFunction('Doctrine\ORM\UnitOfWork::createEntity', function(){}, array($doctrine, 'unitOfWork'));
 $zre->traceFunction('Doctrine\ORM\UnitOfWork::__construct', function(){}, array($doctrine, 'entityMapping'));
 
+// Doctrine\Common\EventManager
+$zre->traceFunction('Doctrine\Common\EventManager::dispatchEvent', function(){}, array($doctrine, 'eventManagerDispatch'));
+$zre->traceFunction('Symfony\Bridge\Doctrine\ContainerAwareEventManager::dispatchEvent', function(){}, array($doctrine, 'eventManagerDispatch'));
+$zre->traceFunction('Doctrine\Common\EventManager::addEventListener', function(){}, array($doctrine, 'eventManagerAddListener'));
+$zre->traceFunction('Symfony\Bridge\Doctrine\ContainerAwareEventManager::addEventListener', function(){}, array($doctrine, 'eventManagerAddListener'));
+
 // Z-Ray Doctrine extension
 $zre->traceFunction('Sake\ZRayDoctrine2\DoctrineOrm::shutdown', function(){}, array($doctrine, 'collectAllData'));
 

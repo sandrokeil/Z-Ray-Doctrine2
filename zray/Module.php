@@ -24,6 +24,8 @@ class Module extends \ZRay\ZRayModule
             'defaultPanels' => array(
                 'queries' => true,
                 'entities' => true,
+                'cache' => true,
+                'events' => true,
             ),
             'panels' => array(
                 'cache' => array(
@@ -33,6 +35,14 @@ class Module extends \ZRay\ZRayModule
                     'panelTitle' => 'Doctrine 2 Cache',
                     'searchId' => 'doctrine-cache-search',
                     'pagerId' => 'doctrine-cache-pager',
+                ),
+                'events' => array(
+                    'display' => true,
+                    'logo' => 'logo.png',
+                    'menuTitle' => 'Events',
+                    'panelTitle' => 'Doctrine 2 Events',
+                    'searchId' => 'doctrine-events-search',
+                    'pagerId' => 'doctrine-events-pager',
                 ),
                 'entities' => array(
                     'display' => true,

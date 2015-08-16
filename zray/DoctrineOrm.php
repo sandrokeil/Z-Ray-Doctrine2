@@ -80,6 +80,11 @@ class DoctrineOrm
     ];
 
     /**
+     * Events
+     */
+    protected $events = [];
+
+    /**
      * Collects queries from \Doctrine\ORM\Persisters\Entity\BasicEntityPersister
      *
      * @param array $context
@@ -366,6 +371,67 @@ class DoctrineOrm
     }
 
     /**
+     * Collects events from Doctrine EventManager
+     *
+     * @param array $context
+     * @param array $storage
+     */
+    public function eventManagerDispatch($context, &$storage)
+    {
+        // dont break z-ray
+        if (empty($context['functionArgs'][0])) {
+            return;
+        }
+
+        $eventName = $context['functionArgs'][0];
+
+        if (empty($this->events[$eventName])) {
+            $this->events[$eventName] = [
+                'name' => $eventName,
+                'number' => 0,
+                'listeners' => [],
+            ];
+        }
+
+        $this->events[$eventName]['number']++;
+
+        if (empty($context['locals']['listener'])) {
+            return;
+        }
+        $listener = get_class($context['locals']['listener']);
+        $this->events[$eventName]['listeners'][$listener] = true;
+    }
+
+    public function eventManagerAddListener($context, &$storage)
+    {
+        // dont break z-ray
+        if (empty($context['functionArgs'][0])) {
+            return;
+        }
+
+        $events = (array) $context['functionArgs'][0];
+
+        $listener = $context['functionArgs'][1];
+
+        if (is_object($listener)) {
+            $listener = get_class($listener);
+        }
+
+        foreach ($events as $event) {
+            if (empty($this->events[$event])) {
+                $this->events[$event] = [
+                    'name' => $event,
+                    'number' => 0,
+                    'listeners' => [$listener => true],
+                ];
+            } else {
+                $this->events[$event]['listeners'][$listener] = true;
+            }
+        }
+
+    }
+
+    /**
      * Collects all data from other functions to display information in Z-Ray
      *
      * @param array $context
@@ -398,6 +464,38 @@ class DoctrineOrm
 
         // collect cache
         $storage['cache'] = $this->cache;
+
+        $events = [
+            'onClear',
+            'onFlush',
+            'postFlush',
+            'postLoad',
+            'postPersist',
+            'postRemove',
+            'postUpdate',
+            'preFlush',
+            'prePersist',
+            'preRemove',
+            'preUpdate',
+            'loadClassMetadata',
+            'onClassMetadataNotFound',
+        ];
+
+        foreach ($events as $event) {
+            $storage['events'][$event] = [
+                'name' => $event,
+                'number' => 0,
+                'listeners' => '',
+            ];
+        }
+
+        foreach ($this->events as $event => $data) {
+            $storage['events'][$event] = [
+                'name' => $data['name'],
+                'number' => $data['number'],
+                'listeners' => implode("\n", array_keys($data['listeners'])),
+            ];
+        }
     }
 
     /**

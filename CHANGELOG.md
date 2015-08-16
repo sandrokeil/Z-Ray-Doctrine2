@@ -1,6 +1,7 @@
 # Z-Ray-Doctrine2 CHANGELOG
 
 ## 1.2.0 TBA
+* Added events panel with Doctrine 2 and Symfony Doctrine 2 Bridge events
 * fixed wrong cache detection
 
 ## 1.1.0 (2015-07-27)
