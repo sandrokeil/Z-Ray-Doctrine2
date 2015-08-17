@@ -4,6 +4,8 @@
 
 > Displays information about your Doctrine 2 queries
 
+> Displays information about your Doctrine 2 events
+
 > Displays information about your Doctrine 2 caches
 
 This is a plugin to add functionality to the Zend Server Z-Ray. It will result in additional tab(s) to be presented in the browser.
@@ -33,18 +35,34 @@ There are the following columns:
 ### Tab Queries
 ![Tab Doctrine 2 Queries](docs/img/tab_queries.png)
 
-The `Queries` tab displays information about executed queries. There are the following columns:
+The `Queries` tab displays information about executed queries. 
+There are the following columns:
 
+ * **#**: Query number
  * **Query**: The executed query with parameter
  * **Number**: The number of executions
  * **Cached**: The number of cached queries
 
 Note: real queries are calculated as `Number - Cached`.
 
+### Tab Events
+![Tab Doctrine 2 Queries](docs/img/tab_events.png)
+
+The `Events` tab displays information about Doctrine 2 events with `Symfony\Bridge\Doctrine` support.
+There are the following columns:
+
+ * **Event**: The event name
+ * **Number**: The Number of occurrences
+ * **Listeners**: Listener classes
+
 ### Tab Cache
 ![Tab Doctrine 2 Queries](docs/img/tab_cache.png)
 
-The `Cache` tab displays information about Doctrine 2 caches.
+The `Cache` tab displays information about Doctrine 2 caches and which cache driver is used.
+There are the following columns:
+
+ * **Type**: The cache type
+ * **Status**: Which cache driver is used
 
 ## More Info
 Want to extend the Doctrine 2 Z-Ray extension? Looking for more information on Z-Ray? Try these links:

@@ -28,11 +28,15 @@ $zre->traceFunction('Doctrine\DBAL\Connection::beginTransaction', function(){}, 
 $zre->traceFunction('Doctrine\DBAL\Connection::commit', function(){}, array($doctrine, 'statement'));
 $zre->traceFunction('Doctrine\DBAL\Connection::rollback', function(){}, array($doctrine, 'statement'));
 
-$zre->traceFunction('Doctrine\DBAL\Statement::__construct', function(){}, array($doctrine, 'statement'));
+$zre->traceFunction('Doctrine\DBAL\Statement::execute', array($doctrine, 'statement'), function(){});
 
 // Cache
 $zre->traceFunction('Doctrine\ORM\Configuration::setSecondLevelCacheEnabled', function(){}, array($doctrine, 'cache'));
-$zre->traceFunction('Doctrine\ORM\Configuration::getSecondLevelCacheConfiguration', function(){}, array($doctrine, 'cache'));
+$zre->traceFunction(
+    'Doctrine\ORM\Configuration::getSecondLevelCacheConfiguration',
+    function(){},
+    array($doctrine, 'cache')
+);
 $zre->traceFunction('Doctrine\ORM\Configuration::setMetadataCacheImpl', function(){}, array($doctrine, 'cache'));
 $zre->traceFunction('Doctrine\ORM\Configuration::getMetadataCacheImpl', function(){}, array($doctrine, 'cache'));
 $zre->traceFunction('Doctrine\ORM\Configuration::setQueryCacheImpl', function(){}, array($doctrine, 'cache'));
@@ -42,14 +46,30 @@ $zre->traceFunction('Doctrine\ORM\Configuration::getHydrationCacheImpl', functio
 $zre->traceFunction('Doctrine\DBAL\Configuration::setResultCacheImpl', function(){}, array($doctrine, 'cache'));
 $zre->traceFunction('Doctrine\DBAL\Configuration::getResultCacheImpl', function(){}, array($doctrine, 'cache'));
 
-// Doctrine\ORM
-$zre->traceFunction(
-    'Doctrine\ORM\Persisters\Entity\BasicEntityPersister::prepareInsertData',
-    function(){},
-    array($doctrine, 'persister')
-);
 $zre->traceFunction('Doctrine\ORM\UnitOfWork::createEntity', function(){}, array($doctrine, 'unitOfWork'));
 $zre->traceFunction('Doctrine\ORM\UnitOfWork::__construct', function(){}, array($doctrine, 'entityMapping'));
+
+// Doctrine\Common\EventManager
+$zre->traceFunction(
+    'Doctrine\Common\EventManager::dispatchEvent',
+    function(){},
+    array($doctrine, 'eventManagerDispatch')
+);
+$zre->traceFunction(
+    'Symfony\Bridge\Doctrine\ContainerAwareEventManager::dispatchEvent',
+    function(){},
+    array($doctrine, 'eventManagerDispatch')
+);
+$zre->traceFunction(
+    'Doctrine\Common\EventManager::addEventListener',
+    function(){},
+    array($doctrine, 'eventManagerAddListener')
+);
+$zre->traceFunction(
+    'Symfony\Bridge\Doctrine\ContainerAwareEventManager::addEventListener',
+    function(){},
+    array($doctrine, 'eventManagerAddListener')
+);
 
 // Z-Ray Doctrine extension
 $zre->traceFunction('Sake\ZRayDoctrine2\DoctrineOrm::shutdown', function(){}, array($doctrine, 'collectAllData'));

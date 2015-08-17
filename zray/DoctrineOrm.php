@@ -22,9 +22,6 @@ use Doctrine\ORM\Mapping\ClassMetadata;
  */
 class DoctrineOrm
 {
-    const INDEX_ENTITIES_UNIQUE = 'unique_entities';
-    const INDEX_ENTITIES_REFERENCE = 'referenced_entities';
-
     /**
      * Entities
      *
@@ -45,13 +42,6 @@ class DoctrineOrm
      * @var int
      */
     protected $queryNumber = 0;
-
-    /**
-     * Last query to set parameters from persister
-     *
-     * @var string
-     */
-    protected $lastQuery = '';
 
     /**
      * Cache settings
@@ -78,6 +68,11 @@ class DoctrineOrm
             'status' => 'none used'
         ],
     ];
+
+    /**
+     * Events
+     */
+    protected $events = [];
 
     /**
      * Collects queries from \Doctrine\ORM\Persisters\Entity\BasicEntityPersister
@@ -173,36 +168,6 @@ class DoctrineOrm
     }
 
     /**
-     * Collects queries from \Doctrine\ORM\Persisters\Entity\BasicEntityPersister
-     *
-     * @param array $context
-     * @param array $storage
-     */
-    public function persister($context, &$storage)
-    {
-        // dont break z-ray
-        if (empty($context['functionArgs'][0])
-            || !$this->lastQuery
-            || empty($context['returnValue'])
-        ) {
-            $this->lastQuery = '';
-            return;
-        }
-
-        $params = [];
-
-        foreach ($context['returnValue'] as &$values) {
-            $params += $values;
-        }
-
-        $this->queries[$this->lastQuery]['query'] = $this->formatQuery(
-            $this->queries[$this->lastQuery]['query'],
-            $params
-        );
-        $this->lastQuery = '';
-    }
-
-    /**
      * Collects all queries from Doctrine\DBAL\Connection
      *
      * @param array $context
@@ -264,6 +229,9 @@ class DoctrineOrm
             return;
         }
 
+        $query = '';
+        $queryId = '';
+
         switch ($context['functionName']) {
             case 'Doctrine\DBAL\Connection::beginTransaction':
                 $query = 'Begin Transaction';
@@ -280,15 +248,45 @@ class DoctrineOrm
                 $this->queryNumber++;
                 $queryId = $query . $this->queryNumber;
                 break;
-            case 'Doctrine\DBAL\Statement::__construct':
+            case 'Doctrine\DBAL\Statement::execute':
+                $reflection = new \ReflectionObject($context['this']);
+
+                if (!$reflection->hasProperty('params')
+                    || !$reflection->hasProperty('types')
+                    || !$reflection->hasProperty('sql')
+                ) {
+                    break;
+                }
+
+                if (empty($context['functionArgs'][0])) {
+                    $params = $reflection->getProperty('params');
+                    $params->setAccessible(true);
+                    $params = $params->getValue($context['this']);
+                } else {
+                    $params = $context['functionArgs'][0];
+                }
+
+                $types = $reflection->getProperty('types');
+                $types->setAccessible(true);
+                $types = $types->getValue($context['this']);
+
+                $query = $reflection->getProperty('sql');
+                $query->setAccessible(true);
+                $query = $query->getValue($context['this']);
+
+                # doctrine does it right
+                list($queryWithParams, $params, $types) = \Doctrine\DBAL\SQLParserUtils::expandListParameters(
+                    $query,
+                    $params,
+                    $types
+                );
+
+                $query = $this->formatQuery($queryWithParams, $params);
                 $this->queryNumber++;
-                $query = isset($context['locals']['sql']) ? $context['locals']['sql'] : 'NO QUERY';
                 $queryId = $query . $this->queryNumber;
-                $this->lastQuery = $this->getQueryId($queryId);
                 break;
             default:
-                $query = '';
-                $queryId = '';
+                // nothing to do
                 break;
         }
 
@@ -366,6 +364,74 @@ class DoctrineOrm
     }
 
     /**
+     * Collects events from Doctrine EventManager
+     *
+     * @param array $context
+     * @param array $storage
+     */
+    public function eventManagerDispatch($context, &$storage)
+    {
+        // dont break z-ray
+        if (empty($context['functionArgs'][0])) {
+            return;
+        }
+
+        $eventName = $context['functionArgs'][0];
+
+        if (empty($this->events[$eventName])) {
+            $this->events[$eventName] = [
+                'name' => $eventName,
+                'number' => 0,
+                'listeners' => [],
+            ];
+        }
+
+        $this->events[$eventName]['number']++;
+
+        if (empty($context['locals']['listener'])) {
+            return;
+        }
+        $listener = get_class($context['locals']['listener']);
+        $this->events[$eventName]['listeners'][$listener] = true;
+    }
+
+    /**
+     * Collects listener from Doctrine EventManager
+     *
+     * @param array $context
+     * @param array $storage
+     */
+    public function eventManagerAddListener($context, &$storage)
+    {
+        // dont break z-ray
+        if (empty($context['functionArgs'][0])
+            || empty($context['functionArgs'][1])
+        ) {
+            return;
+        }
+
+        $events = (array) $context['functionArgs'][0];
+
+        $listener = $context['functionArgs'][1];
+
+        if (is_object($listener)) {
+            $listener = get_class($listener);
+        }
+
+        foreach ($events as $event) {
+            if (empty($this->events[$event])) {
+                $this->events[$event] = [
+                    'name' => $event,
+                    'number' => 0,
+                    'listeners' => [$listener => true],
+                ];
+            } else {
+                $this->events[$event]['listeners'][$listener] = true;
+            }
+        }
+    }
+
+    /**
      * Collects all data from other functions to display information in Z-Ray
      *
      * @param array $context
@@ -398,6 +464,38 @@ class DoctrineOrm
 
         // collect cache
         $storage['cache'] = $this->cache;
+
+        $events = [
+            'onClear',
+            'onFlush',
+            'postFlush',
+            'postLoad',
+            'postPersist',
+            'postRemove',
+            'postUpdate',
+            'preFlush',
+            'prePersist',
+            'preRemove',
+            'preUpdate',
+            'loadClassMetadata',
+            'onClassMetadataNotFound',
+        ];
+
+        foreach ($events as $event) {
+            $storage['events'][$event] = [
+                'name' => $event,
+                'number' => 0,
+                'listeners' => '',
+            ];
+        }
+
+        foreach ($this->events as $event => $data) {
+            $storage['events'][$event] = [
+                'name' => $data['name'],
+                'number' => $data['number'],
+                'listeners' => implode("\n", array_keys($data['listeners'])),
+            ];
+        }
     }
 
     /**

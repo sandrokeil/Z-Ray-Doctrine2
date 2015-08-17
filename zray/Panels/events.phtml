@@ -1,0 +1,97 @@
+<?php
+/**
+ * Sake
+ *
+ * @link      http://github.com/sandrokeil/Z-Ray-Doctrine2 for the canonical source repository
+ * @copyright Copyright (c) 2015 Sandro Keil
+ * @license   http://github.com/sandrokeil/Z-Ray-Doctrine2/blob/master/LICENSE.txt New BSD License
+ */
+
+$tableParamsDoctrineEvents = array(
+    'tableId' => 'table-doctrine-events',
+    'tableWidth' => '4',
+);
+?>
+<p style="padding:5px 10px">
+    Displays information about
+    <a href="http://doctrine-orm.readthedocs.org/en/latest/reference/events.html"
+       target="_blank" title="Doctrine 2 events documentation">Doctrine 2 events</a>.
+    <span class="zdb-pull-right zdb-expand-all"
+          style="padding-right: 7%"
+          onclick="zendDevBar.expandTableRows(this, '#table-doctrine-events')">Expand all</span>
+</p>
+<?= $this->zrayTable($tableParamsDoctrineEvents); ?>
+
+<script type="text/javascript">
+    (function() {
+        var storage = zray.getStorage( 'doctrineEvents' );
+
+        // create main table
+        var maintable = zray.createTable( storage, jQuery( '#<?php echo $tableParamsDoctrineEvents['tableId']; ?>' ) );
+        maintable.setColumns( [
+            {
+                "label": "Event",
+                "propertyName": "name",
+                "sortable": true,
+                "width": '25%',
+                "tooltip": "Doctrine 2 event",
+                "getHtml": function( value, record ) {
+                    return value;
+                }
+            },
+            {
+                "label": "Number",
+                "propertyName": "number",
+                "sortable": true,
+                "width": '10%',
+                "tooltip": "The Number of occurrences",
+                "getHtml": function( value, record ) {
+                    return value;
+                }
+            },
+            {
+                "label": "Listeners",
+                "propertyName": "listeners",
+                "sortable": true,
+                "width": '65%',
+                "tooltip": "Listener classes",
+                "getHtml": function( value, record ) {
+
+                    var contentWrapper = $zendDevBar( '<div></div>' );
+
+                    var length = value.indexOf("\n");
+
+                    if (length < 0) {
+                        length = null;
+                    }
+
+                    var expandor = zendDevBar.expendedText( value, length, function( eventData ) {
+                        var $elem = $zendDevBar( '<span>' ).text( eventData );
+                        $zendDevBar( 'body' ).append( $elem );
+                        $elem.remove();
+                        return $elem.html().replace(/\n/g,"<br>");
+                    } );
+
+                    if ( typeof expandor != 'string' ) {
+                        $zendDevBar( expandor ).on( 'expandingTextChanged', function( event ) {
+                            var searchTerm = zendDevBar.getStorage( 'doctrineEvents' ).searchTerm;
+                            $zendDevBar( event.target ).highlight( searchTerm );
+                        } );
+                    }
+
+                    contentWrapper.html( expandor );
+                    return contentWrapper;
+                }
+            }
+        ] );
+        // create main table - end
+
+        // create pager and search
+        zray.createPager( storage, jQuery( '#<?php echo $params['pagerId']; ?>' ) );
+        zray.createSearch( storage, jQuery( '#<?php echo $params['searchId']; ?>' ), maintable );
+
+        zray.registerDataHandler( 'doctrine2', 'events', function( extensionData, requestData ) {
+            storage.setData( extensionData );
+        } );
+    })();
+</script>
