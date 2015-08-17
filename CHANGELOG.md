@@ -15,7 +15,7 @@
 * Added query number
 * [4](https://github.com/sandrokeil/Z-Ray-Doctrine2/issues/4): Added cache tab
 
-## Version 1.0.0 (2015-05-07)
+## 1.0.0 (2015-05-07)
 
 * Added entities tab
 * Added queries tab
